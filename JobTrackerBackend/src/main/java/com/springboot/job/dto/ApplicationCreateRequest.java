@@ -12,23 +12,25 @@ import lombok.Data;
 @Data
 public class ApplicationCreateRequest {
 
-	@NotBlank
+	@NotBlank(message = "Company name is required")
 	private String companyName;
 
-	@NotBlank
+	@NotBlank(message = "Job title is required")
 	private String jobTitle;
 
-	@NotBlank
+	@NotBlank(message = "Location is required")
 	private String location;
 
 	private LocalDate applicationDate;
+	
+    
+	private Status status;
 
-	private Status status; 
-
-	@Min(1)
-	@Max(5)
+	@Min(value = 1, message = "Priority must be at least 1")
+	@Max(value = 5, message = "Priority must be at most 5")
 	private int priority;
-
+	
+    @Min(value = 0, message = "Salary must be a positive number")
 	private Integer salary;
 
 	private String notes;
