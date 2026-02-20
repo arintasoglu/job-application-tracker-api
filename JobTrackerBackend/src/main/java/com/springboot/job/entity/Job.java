@@ -1,6 +1,8 @@
 package com.springboot.job.entity;
 
 import java.time.LocalDate;
+
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -55,5 +57,8 @@ public class Job {
 
 	@Column(name = "job_description", nullable = true, length = 2000)
 	private String jobDescription;
+	
+	@Column(name = "last_updated")
+	private LocalDate lastUpdated;
 
 }

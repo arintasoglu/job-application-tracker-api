@@ -1,5 +1,6 @@
 package com.springboot.job.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +41,7 @@ public class ApplicationService {
 		job.setPriority(request.getPriority());
 		job.setNotes(request.getNotes());
 		job.setJobDescription(request.getJobDescription());
+		job.setLastUpdated(LocalDate.now());
 
 		Job savedApplication = applicationDAO.save(job);
 
@@ -69,9 +71,6 @@ public class ApplicationService {
 		Specification<Job> spec = JobSpecification.getSpecification(search);
 
 		List<Job> jobs = applicationDAO.findAll(spec, pageable).getContent();
-		for (Job job : jobs) {
-			System.out.println("Job: " + job.getCompanyName() + ", " + job.getJobTitle());
-		}
 		List<ApplicationResponse> responses = new ArrayList<>();
 
 		for (Job job : jobs) {
@@ -86,6 +85,25 @@ public class ApplicationService {
 			throw new ApplicationNotFoundException(id);
 		}
 		applicationDAO.deleteById(id);
+	}
+
+	public List<ApplicationResponse> getFollowUpApplications(int page, int size, String sortBy, String sortDir) {
+
+		Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, sortBy));
+		List<Job> jobs = applicationDAO.findAll(pageable).getContent();
+		List<ApplicationResponse> responses = new ArrayList<>();
+		LocalDate today = LocalDate.now();
+		for (Job job : jobs) {
+			if (job.getStatus() == Status.APPLIED) {
+				if (job.getApplicationDate().isBefore(today.minusDays(14))) {
+					responses.add(toResponse(job));
+
+				}
+			}
+		}
+
+		return responses;
+
 	}
 
 	public ApplicationResponse updateApplicationStatus(int id, Status status) {
@@ -104,6 +122,7 @@ public class ApplicationService {
 		}
 
 		job.setStatus(newStatus);
+		job.setLastUpdated(LocalDate.now());
 		Job updatedJob = applicationDAO.save(job);
 
 		JobStatusHistory history = new JobStatusHistory();
@@ -219,6 +238,7 @@ public class ApplicationService {
 		response.setPriority(job.getPriority());
 		response.setSalary(job.getSalary());
 		response.setNotes(job.getNotes());
+		response.setLastUpdated(job.getLastUpdated());
 		return response;
 	}
 

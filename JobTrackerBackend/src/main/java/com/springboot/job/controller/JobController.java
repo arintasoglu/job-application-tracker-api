@@ -75,5 +75,11 @@ public class JobController {
 		return applicationService.getStatusHistoryForJob(id);
 
 	}
+	@GetMapping("/applications/followups")
+	public List<ApplicationResponse> getFollowUpApplications(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size, @RequestParam(defaultValue = "applicationDate") String sortBy,
+			@RequestParam(defaultValue = "desc") String sortDir) {
+		return applicationService.getFollowUpApplications(page, size, sortBy, sortDir);
+	}
 
 }

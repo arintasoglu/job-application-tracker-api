@@ -19,4 +19,6 @@ public class ApplicationResponse {
 	private Integer salary;
 	private String notes;
 	private String jobDescription;
+	private LocalDate lastUpdated;
+
 }
