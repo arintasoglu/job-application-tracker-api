@@ -1,5 +1,6 @@
 package com.springboot.job.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springboot.job.dao.JobStatusHistoryDAO;
 import com.springboot.job.dto.ApplicationCreateRequest;
 import com.springboot.job.dto.ApplicationResponse;
+import com.springboot.job.dto.OverviewResponse;
+import com.springboot.job.entity.JobStatusHistory;
 import com.springboot.job.entity.Status;
 import com.springboot.job.exception.ApplicationNotFoundException;
 import com.springboot.job.service.ApplicationService;
@@ -59,4 +63,17 @@ public class JobController {
 
 		return applicationService.updateApplicationStatus(id, status);
 	}
+
+	@GetMapping("/stats")
+	public OverviewResponse getOverviewStats() {
+		return applicationService.getOverview();
+	}
+
+	@GetMapping("/{id}/history")
+	public List<Status> getHistory(@PathVariable("id") int id) {
+
+		return applicationService.getStatusHistoryForJob(id);
+
+	}
+
 }
