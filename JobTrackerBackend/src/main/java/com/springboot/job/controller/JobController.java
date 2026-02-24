@@ -32,8 +32,14 @@ public class JobController {
 	@Autowired
 	private ApplicationService applicationService;
 
+	@GetMapping("/test")
+	public String testEndpoint() {
+		System.out.println("Security check passed, endpoint is accessible.");
+		return "Security check is working!";
+	}
+
 	@PostMapping("/create")
-	public ApplicationResponse createApplication(@Valid @RequestBody ApplicationCreateRequest request) {
+	public ApplicationResponse createApplication(@Valid @RequestBody ApplicationCreateRequest request ) {
 		return applicationService.createApplication(request);
 	}
 
@@ -75,6 +81,7 @@ public class JobController {
 		return applicationService.getStatusHistoryForJob(id);
 
 	}
+
 	@GetMapping("/applications/followups")
 	public List<ApplicationResponse> getFollowUpApplications(@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "5") int size, @RequestParam(defaultValue = "applicationDate") String sortBy,

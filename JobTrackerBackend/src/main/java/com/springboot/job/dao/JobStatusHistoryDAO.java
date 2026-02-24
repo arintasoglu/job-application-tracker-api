@@ -10,7 +10,8 @@ import com.springboot.job.entity.JobStatusHistory;
 
 public interface JobStatusHistoryDAO extends JpaRepository<JobStatusHistory, Integer>{
 	
-	List<JobStatusHistory> findByJob_JobIdOrderByChangedAtDesc(int jobId);
+
+	List<JobStatusHistory> findByJobOrderByChangedAtDesc(Job job);
 	
 	
 

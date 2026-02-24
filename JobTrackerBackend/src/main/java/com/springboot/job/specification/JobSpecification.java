@@ -10,6 +10,11 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
 public class JobSpecification {
+	
+	  public static Specification<Job> belongsToUser(String email) {
+	        return (root, query, cb) ->
+	                cb.equal(root.get("user").get("email"), email);
+	    }
 
 	public static Specification<Job> getSpecification(String search) {
 		return new Specification<Job>() {

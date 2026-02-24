@@ -10,16 +10,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.springboot.job.dao.ApplicationDAO;
 import com.springboot.job.dao.JobStatusHistoryDAO;
+import com.springboot.job.dao.UserDAO;
 import com.springboot.job.dto.ApplicationCreateRequest;
 import com.springboot.job.dto.ApplicationResponse;
 import com.springboot.job.dto.OverviewResponse;
 import com.springboot.job.entity.Job;
 import com.springboot.job.entity.JobStatusHistory;
 import com.springboot.job.entity.Status;
+import com.springboot.job.entity.User;
 import com.springboot.job.exception.ApplicationNotFoundException;
 import com.springboot.job.specification.JobSpecification;
 
@@ -29,10 +33,30 @@ public class ApplicationService {
 	private ApplicationDAO applicationDAO;
 	@Autowired
 	private JobStatusHistoryDAO historyDAO;
+	@Autowired
+	private UserDAO userDAO;
+
+	private User currentUser() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+		if (auth == null || !auth.isAuthenticated()) {
+			throw new RuntimeException("User not authenticated");
+		}
+
+		String email = auth.getName();
+		User user = userDAO.findByEmail(email);
+
+		if (user == null) {
+			throw new RuntimeException("Authenticated user not found");
+		}
+
+		return userDAO.findByEmail(email);
+	}
 
 	public ApplicationResponse createApplication(ApplicationCreateRequest request) {
 		Job job = new Job();
 		job.setCompanyName(request.getCompanyName());
+		job.setUser(currentUser());
 		job.setJobTitle(request.getJobTitle());
 		job.setLocation(request.getLocation());
 		job.setApplicationDate(request.getApplicationDate());
@@ -49,14 +73,16 @@ public class ApplicationService {
 	}
 
 	public ApplicationResponse getApplicationById(int id) {
-		Job job = applicationDAO.findById(id).orElseThrow(() -> new ApplicationNotFoundException(id));
+		String email = currentUser().getEmail();
+		Job job = applicationDAO.findByJobIdAndUserEmail(id, email)
+				.orElseThrow(() -> new ApplicationNotFoundException(id));
 
 		return toResponse(job);
 	}
 
 	public List<ApplicationResponse> getAllApplications(int page, int size, String sortBy, String sortDir,
 			String search) {
-
+		String email = currentUser().getEmail();
 		String safeSortBy = "applicationDate";
 		if ("priority".equalsIgnoreCase(sortBy)) {
 			safeSortBy = "priority";
@@ -68,9 +94,13 @@ public class ApplicationService {
 
 		Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(direction, safeSortBy));
 
-		Specification<Job> spec = JobSpecification.getSpecification(search);
+	    Specification<Job> spec =
+	            JobSpecification.belongsToUser(email)
+	                    .and(JobSpecification.getSpecification(search));
 
-		List<Job> jobs = applicationDAO.findAll(spec, pageable).getContent();
+	    List<Job> jobs = applicationDAO.findAll(spec, pageable).getContent();
+
+
 		List<ApplicationResponse> responses = new ArrayList<>();
 
 		for (Job job : jobs) {
@@ -81,16 +111,17 @@ public class ApplicationService {
 	}
 
 	public void deleteApplication(int id) {
-		if (!applicationDAO.existsById(id)) {
+		String email = currentUser().getEmail();
+		if (!applicationDAO.existsByJobIdAndUserEmail(id, email)) {
 			throw new ApplicationNotFoundException(id);
 		}
-		applicationDAO.deleteById(id);
+		applicationDAO.deleteByJobIdAndUserEmail(id, email);
 	}
 
 	public List<ApplicationResponse> getFollowUpApplications(int page, int size, String sortBy, String sortDir) {
-
+		String email = currentUser().getEmail();
 		Pageable pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1), Sort.by(Sort.Direction.DESC, sortBy));
-		List<Job> jobs = applicationDAO.findAll(pageable).getContent();
+		List<Job> jobs = applicationDAO.findByUserEmail(email, pageable).getContent();
 		List<ApplicationResponse> responses = new ArrayList<>();
 		LocalDate today = LocalDate.now();
 		for (Job job : jobs) {
@@ -107,8 +138,9 @@ public class ApplicationService {
 	}
 
 	public ApplicationResponse updateApplicationStatus(int id, Status status) {
-
-		Job job = applicationDAO.findById(id).orElseThrow(() -> new ApplicationNotFoundException(id));
+		String email = currentUser().getEmail();
+		Job job = applicationDAO.findByJobIdAndUserEmail(id, email)
+				.orElseThrow(() -> new ApplicationNotFoundException(id));
 
 		Status oldStatus = job.getStatus();
 		Status newStatus = status;
@@ -138,13 +170,18 @@ public class ApplicationService {
 	}
 
 	public List<JobStatusHistory> getStatusHistory(int jobId) {
-		return historyDAO.findByJob_JobIdOrderByChangedAtDesc(jobId);
+		String email = currentUser().getEmail();
+		Job job = applicationDAO.findByJobIdAndUserEmail(jobId, email)
+				.orElseThrow(() -> new ApplicationNotFoundException(jobId)); // TODO
+
+		return historyDAO.findByJobOrderByChangedAtDesc(job);
 	}
 
 	public OverviewResponse getOverview() {
 		OverviewResponse response = new OverviewResponse();
+		String email = currentUser().getEmail();
 
-		List<Job> jobs = applicationDAO.findAll();
+		List<Job> jobs = applicationDAO.findByUserEmail(email);
 
 		int total = jobs.size();
 		int draftCount = 0;
@@ -243,6 +280,9 @@ public class ApplicationService {
 	}
 
 	public List<Status> getStatusHistoryForJob(int id) {
+		String email = currentUser().getEmail();
+		Job job = applicationDAO.findByJobIdAndUserEmail(id, email)
+				.orElseThrow(() -> new ApplicationNotFoundException(id)); // TODO
 		List<JobStatusHistory> list = getStatusHistory(id);
 
 		if (list.isEmpty()) {
