@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
@@ -39,4 +40,11 @@ public class CustomExceptionHandler {
 		return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 	}
 
+    @ExceptionHandler(value = {EmailAlreadyRegisteredException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)  // 409
+    public Map<String, String> handleEmailAlreadyRegistered(EmailAlreadyRegisteredException ex) {
+        return Map.of("error", ex.getMessage());
+    }
 }
+
+

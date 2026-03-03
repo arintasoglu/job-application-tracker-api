@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.springboot.job.dao.UserDAO;
 import com.springboot.job.entity.User;
 import com.springboot.job.entity.UserPrincipal;
+import com.springboot.job.exception.EmailAlreadyRegisteredException;
 
 @Service
 public class UserService {
@@ -31,7 +32,7 @@ public class UserService {
 
 	public void registerUser(String email, String password) {
 		if (isEmailRegistered(email)) {
-			throw new IllegalArgumentException("Email is already registered");
+			throw new EmailAlreadyRegisteredException("Email is already registered");
 		}
 		User user = new User();
 		user.setEmail(email);
