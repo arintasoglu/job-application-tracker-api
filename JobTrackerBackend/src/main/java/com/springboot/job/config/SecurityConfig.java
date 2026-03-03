@@ -33,7 +33,7 @@ public class SecurityConfig {
 		http.cors(cors -> cors.disable()).csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(
-						auth -> auth.requestMatchers("/auth/login").permitAll().requestMatchers("/auth/register")
+						auth -> auth.requestMatchers("/auth/login").permitAll().requestMatchers("/auth/register", "/swagger-ui/**", "/v3/api-docs/**")
 								.permitAll().requestMatchers("/api/jobs/test").permitAll().anyRequest().authenticated())
 				.httpBasic(Customizer.withDefaults())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
