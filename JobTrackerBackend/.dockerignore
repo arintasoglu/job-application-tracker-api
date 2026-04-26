@@ -1,0 +1,6 @@
+JobTrackerBackend/target/
+*.log
+.git
+.gitignore
+.env
+*.md
