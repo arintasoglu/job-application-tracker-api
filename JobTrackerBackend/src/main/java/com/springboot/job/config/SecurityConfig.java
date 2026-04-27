@@ -29,13 +29,15 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
 		http.cors(cors -> cors.disable()).csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(
-						auth -> auth.requestMatchers("/auth/login").permitAll().requestMatchers("/auth/register", "/swagger-ui/**", "/v3/api-docs/**")
-								.permitAll().requestMatchers("/api/jobs/test").permitAll().anyRequest().authenticated())
-				.httpBasic(Customizer.withDefaults())
+				.authorizeHttpRequests(auth -> auth
+
+						.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
+								"/swagger-resources/**", "/webjars/**")
+						.permitAll().requestMatchers("/auth/login", "/auth/register").permitAll()
+						.requestMatchers("/api/jobs/test").permitAll().anyRequest().authenticated())
+				//.httpBasic(Customizer.withDefaults())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
