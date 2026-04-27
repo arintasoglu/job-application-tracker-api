@@ -53,7 +53,7 @@ A secure REST API built with Spring Boot for tracking job applications. Features
 
 ### Create & Retrieve Applications
 ![Create Job](screenshots/swagger-create-job.png)
-![Get Applications](screenshots/swagger-get-applications.png)
+![Get Applications](screenshots/swagger-get--applications.png)
 
 ---
 
