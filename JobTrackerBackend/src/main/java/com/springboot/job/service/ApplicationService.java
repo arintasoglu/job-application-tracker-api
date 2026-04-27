@@ -66,8 +66,6 @@ public class ApplicationService {
 		job.setNotes(request.getNotes());
 		job.setJobDescription(request.getJobDescription());
 		job.setLastUpdated(LocalDate.now());
-		System.out.println(job);
-
 		Job savedApplication = applicationDAO.save(job);
 
 		return toResponse(savedApplication);
