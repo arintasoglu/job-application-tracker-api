@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 
 import com.springboot.job.entity.Job;
@@ -17,7 +18,8 @@ public interface ApplicationDAO extends JpaRepository<Job, Integer>, JpaSpecific
 	List<Job> findByUserEmail(String email);
 
 	Optional<Job> findByJobIdAndUserEmail(int jobId, String email);
-
+    
+	@Transactional
 	void deleteByJobIdAndUserEmail(int jobId, String email);
 
 	boolean existsByJobIdAndUserEmail(int jobId, String email);
