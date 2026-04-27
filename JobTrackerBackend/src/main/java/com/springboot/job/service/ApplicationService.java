@@ -66,6 +66,7 @@ public class ApplicationService {
 		job.setNotes(request.getNotes());
 		job.setJobDescription(request.getJobDescription());
 		job.setLastUpdated(LocalDate.now());
+		System.out.println(job);
 
 		Job savedApplication = applicationDAO.save(job);
 
@@ -275,6 +276,7 @@ public class ApplicationService {
 		response.setPriority(job.getPriority());
 		response.setSalary(job.getSalary());
 		response.setNotes(job.getNotes());
+		response.setJobDescription(job.getJobDescription());
 		response.setLastUpdated(job.getLastUpdated());
 		return response;
 	}
